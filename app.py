@@ -18,7 +18,6 @@ def compute_similarity(model_state, query, *passages):
     pass_list = [p.strip() for p in passages if p and p.strip()]
     if not pass_list:
         return "请至少输入一条候选段落。", ""
-    # 不调用真实模型，仅生成示例展示
     header = "| 候选段落 | 相似度（示例） |\n|----------|----------------|\n"
     rows = [f"| 段落 {i+1} | 0.{85 + i % 15:.2f} |" for i in range(len(pass_list))]
     table = header + "\n".join(rows)
@@ -27,26 +26,14 @@ def compute_similarity(model_state, query, *passages):
 
 def create_ui():
     model_state = gr.State(value=None)
-
-    with gr.Blocks(title="E5-base 文本嵌入 WebUI", theme=gr.themes.Soft()) as demo:
+    with gr.Blocks(title="E5-base 文本嵌入 WebUI") as demo:
         gr.Markdown("# E5-base 文本嵌入与相似度计算")
         gr.Markdown("输入模型名称并点击「加载模型」后，可输入查询与候选段落查看相似度展示（本演示不实际加载模型）。")
-
         with gr.Row():
-            model_name = gr.Textbox(
-                label="模型路径或名称",
-                placeholder="例如：intfloat/e5-base",
-                value="intfloat/e5-base",
-            )
+            model_name = gr.Textbox(label="模型路径或名称", placeholder="例如：intfloat/e5-base", value="intfloat/e5-base")
             load_btn = gr.Button("加载模型", variant="primary")
         load_status = gr.Textbox(label="加载状态", interactive=False)
-
-        load_btn.click(
-            fn=load_model,
-            inputs=[model_name],
-            outputs=[load_status, model_state],
-        )
-
+        load_btn.click(fn=load_model, inputs=[model_name], outputs=[load_status, model_state])
         gr.Markdown("---")
         gr.Markdown("### 查询与候选段落")
         query = gr.Textbox(label="查询文本", placeholder="输入查询，实际使用时建议加「query: 」前缀")
@@ -54,18 +41,11 @@ def create_ui():
         p2 = gr.Textbox(label="候选段落 2", placeholder="输入候选文本")
         p3 = gr.Textbox(label="候选段落 3", placeholder="输入候选文本（可选）")
         calc_btn = gr.Button("计算相似度", variant="secondary")
-
         result_msg = gr.Textbox(label="说明", interactive=False)
         result_table = gr.Markdown(label="相似度结果")
-
-        calc_btn.click(
-            fn=compute_similarity,
-            inputs=[model_state, query, p1, p2, p3],
-            outputs=[result_msg, result_table],
-        )
-
+        calc_btn.click(fn=compute_similarity, inputs=[model_state, query, p1, p2, p3], outputs=[result_msg, result_table])
     return demo
 
 if __name__ == "__main__":
     demo = create_ui()
-    demo.launch(server_name="127.0.0.1", server_port=17860)
+    demo.launch(server_name="127.0.0.1", server_port=7860)
